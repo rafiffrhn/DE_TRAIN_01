@@ -1,63 +1,60 @@
-# 🌬️ Wind Turbine SCADA ETL Pipeline
+# End-to-End Wind Turbine SCADA Pipeline & Machine Learning
 
-## 📌 Deskripsi Proyek
-Proyek ini adalah *End-to-End Data Engineering Pipeline* yang memproses data sensor IoT (*SCADA*) dari kincir angin (Wind Turbine). Pipeline ini dirancang untuk menarik data mentah, melakukan transformasi dan *data cleaning* secara otomatis, menyimpannya ke dalam sistem Data Warehouse lokal, dan memvisualisasikan hasilnya untuk keperluan *Business Intelligence*.
+## Deskripsi Proyek
+Proyek ini adalah portofolio *Full-Stack Data* komprehensif yang menggabungkan bidang **Data Engineering** dan **Data Science**. Menggunakan dataset sensor IoT (*SCADA*) dari kincir angin, proyek ini merancang sistem *pipeline* data otomatis dari hulu ke hilir: mulai dari ekstraksi data mentah, pembersihan anomali, penyimpanan ke Data Warehouse, visualisasi Business Intelligence, hingga pengembangan model Machine Learning prediktif.
 
-Tujuan utama dari proyek ini adalah mengidentifikasi performa mesin dan membedakan kapan kincir angin beroperasi secara **Normal** dan kapan mengalami **Error/Maintenance** berdasarkan anomali data daya dan kecepatan angin.
+## Tech Stack & Tools
+- **Bahasa Pemrograman:** Python 3
+- **Data Engineering & ETL:** Prefect (Orchestration), DuckDB (Data Warehouse), PyArrow (Parquet)
+- **Data Science & ML:** Scikit-Learn (Random Forest Regressor & Classifier), Pandas, NumPy
+- **Visualization:** Matplotlib, Seaborn, Power BI Desktop
+- **Version Control:** Git & GitHub
 
-## 🛠️ Tech Stack & Tools
-- **Bahasa Pemrograman:** Python
-- **Data Processing:** Pandas, NumPy
-- **Format Penyimpanan:** Parquet (PyArrow)
-- **Data Warehouse:** DuckDB
-- **Orkestrasi & Automasi:** Prefect
-- **Data Visualization:** Power BI Desktop
+## Struktur Repositori
+```text
+├── data/                    # Penyimpanan data (Processed / Parquet)
+├── images/                  # Aset gambar untuk dokumentasi & dashboard
+├── notebooks/               # Eksperimen & Pemodelan Data Science
+│    ├── prediksi_daya.ipynb         # Model Regresi (Prediksi Active Power)
+│    └── predictive_maintenance.ipynb # Model Klasifikasi (Deteksi Status Mesin)
+├── Perfect.py               # Script orkestrasi ETL Pipeline otomatis
+├── transform.py             # Logika transformasi & handling anomali
+├── load.py                  # Load data ke DuckDB
+└── README.md
+```
+## Part 1: Data Engineering (Automated Pipeline)
+Pipeline diorkestrasi menggunakan Prefect dengan tahapan:
+- **Extract & Clean:** Membaca data CSV, membersihkan nilai anomali (daya negatif), dan melakukan time-partitioning.
+- **Feature Engineering:** Membuat kolom turbine_status (Normal vs Maintenance/Error) berdasarkan logika bisnis kecepatan angin dan daya.
+- **Load:** Menyimpan data terstruktur ke format Parquet dan DuckDB secara otomatis.
 
-## 🗄️ Dataset
-Data yang digunakan berasal dari Kaggle: [Wind Turbine SCADA Dataset](https://www.kaggle.com/datasets/berkerisen/wind-turbine-scada-dataset). Dataset ini berisi log sensor yang direkam setiap 10 menit, mencakup:
-- `Date/Time`: Waktu pencatatan.
-- `LV ActivePower (kW)`: Daya yang dihasilkan.
-- `Wind Speed (m/s)`: Kecepatan angin.
-- `Theoretical_Power_Curve (KWh)`: Daya teoritis.
-- `Wind Direction (°)`: Arah angin.
+## Part 2: Data Sciennce & Machine Learning
+Di tahap ini, data bersih dieksplorasi lebih dalam menggunakan Jupyter Notebook di dalam folder notebooks/:
+- **Model Regresi (regression_daya.ipynb):** Membangun RandomForestRegressor untuk memprediksi besarnya daya listrik (active_power_kw) berdasarkan kecepatan angin. Model ini sukses mencetak skor akurasi $R^2$ sebesar 96.15%.
+- **Model Klasifikasi (classification_predmaintenance.ipynb):** Membangun RandomForestClassifier untuk mendeteksi status kerusakan mesin (Predictive Maintenance) serta menganalisis mitigasi Data Leakage untuk menguji performa model di dunia nyata.
 
-## ⚙️ Arsitektur Data Pipeline (ETL)
-Pipeline ini diorkestrasi menggunakan **Prefect** dengan tahapan berikut:
+## Visualisasi & Dashboard
+- **Power BI:** Digunakan untuk monitoring performa operasional kincir angin secara interaktif.
+- **Matplotlib & Seaborn:** Digunakan untuk evaluasi model Machine Learning (Scatter plot aktual vs prediksi dan analisis Feature Importance).
 
-1. **Extract (E):** Membaca data mentah (*raw data*) berformat CSV.
-2. **Transform (T):**
-   - **Standarisasi Kolom:** Mengubah nama kolom menjadi format *snake_case* agar *SQL-friendly*.
-   - **Time Partitioning:** Memecah kolom *timestamp* menjadi kolom `year`, `month`, `day`, dan `hour`.
-   - **Handling Anomalies:** Mengubah nilai daya (Active Power) negatif menjadi 0.
-   - **Business Logic (Feature Engineering):** Membuat kolom baru `turbine_status`. Jika kecepatan angin > 3.5 m/s tetapi daya yang dihasilkan <= 0.1 kW, maka status ditandai sebagai `Maintenance/Error`. Jika tidak, ditandai `Normal`.
-   - **Optimasi Penyimpanan:** Mengonversi data hasil olahan menjadi format **Parquet**.
-3. **Load (L):** Membuat tabel baru dan memuat data Parquet ke dalam *Data Warehouse* lokal menggunakan **DuckDB**.
+## Cara Menjalankan Proyek
+1. **Clone Repositori ini
+```bash
+git clone https://github.com/rafiffrhn/end-to-end-data-pipeline-1.git
+cd end-to-end-data-pipeline-1
+```
+2. Install requirements
+```bash
+pip install -r requirements.txt
+```
+3. Jalankan pipeline Prefect atau buka Jupyter Notebook di dalam folder notebooks/ untuk melihat eksperimen model AI.
+```bash
+python -m prefect server start
+```
+Dashboard Prefect dapat diakses melalui http://127.0.0.1:4200
 
-## 📊 Hasil Visualisasi (Dashboard)
-Data bersih yang tersimpan dihubungkan secara langsung ke **Power BI** untuk membuat *dashboard* monitoring interaktif.
-
-![Power BI Dashboard](https://drive.google.com/file/d/15ZW2_hPG3bdV1e1ZmPgurbOCVwbrxhKx/view?usp=sharing)
-
-![Prefect Orchestration](https://drive.google.com/file/d/1neh1XFl5h8Z0Up9BZDR6sou6SnYfr0zq/view?usp=drive_link)
-
-## 🚀 Cara Menjalankan Proyek Ini (How to Run)
-
-1. **Clone repository ini:**
-   ```bash
-   git clone https://github.com/rafiffrhn/DE_TRAIN_01.git
-   cd DE_TRAIN_01
-
-2. **Install Requirements**
-   ```bash
-   pip install -r requirements.txt
-
-3. **Siapkan Raw Dataset:**
-  Buat folder data/raw/ di dalam direktori proyek, lalu unduh dan masukkan file T1.csv dari Kaggle ke dalam folder tersebut
-
-4. **Nyalakan Prefect Server (Buka terminal pertama)**
-   ```bash
-   python -m prefect server start
-
-4. **Jalankan Pipeline Automasi (Buka terminal kedua):**
-   ```bash
-   python Perfect.py
+4. Jalankan Pipeline Automasi (Buka terminal kedua)
+```bash
+python Prefect.py
+```
+Script ini akan mengeksekusi pipeline (Transform & Load) secara otomatis berdasarkan jadwal yang sudah ditentukan pada code.
